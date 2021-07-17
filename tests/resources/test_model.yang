@@ -1,0 +1,15 @@
+module test {
+    yang-version 1;
+    namespace "ns:yang:test";
+    prefix "test";
+
+    revision "2021-07-12" {
+        description "Test YANG module";
+    }
+
+    container users {
+        leaf name {
+             type string;
+        }
+    }
+}

@@ -1,0 +1,8 @@
+[netconf]
+host = "127.0.0.1"
+port = 830
+user = "root"
+password = "root"
+docker_image = "sysrepo/sysrepo-netopeer2"
+docker_sha = "266d2cdfe2c34075c8921b98303322f51e3a7348d8776783f99531d5a3aa0563"
+container_name = "sysrepo"
