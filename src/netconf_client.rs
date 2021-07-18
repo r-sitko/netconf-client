@@ -1,6 +1,6 @@
 use crate::consts;
 use crate::errors::NetconfClientError;
-use crate::errors::NetconfClientError::{NetconfError, SSHClientError};
+use crate::errors::NetconfClientError::{NetconfError, NetconfResponseIdError, SSHClientError};
 use crate::models::{replies::*, requests::*};
 use crate::ssh_client::SSHClient;
 use quick_xml::se::to_string;
@@ -16,7 +16,7 @@ impl NetconfClient {
     pub fn new(host: &str, port: u16, user: &str, password: &str) -> NetconfClient {
         NetconfClient {
             ssh_client: SSHClient::create(host, port, user, password),
-            id: 1,
+            id: 0,
             session_id: None,
         }
     }
@@ -75,6 +75,7 @@ impl NetconfClient {
     }
 
     pub fn kill_session(&mut self, session_id: u32) -> Result<KillSessionRsp, NetconfClientError> {
+        self.id += 1;
         let req = KillSessionReq {
             message_id: self.id,
             xmlns: consts::XMLNS.to_string(),
@@ -84,15 +85,13 @@ impl NetconfClient {
         };
         let cmd = to_string(&req).unwrap() + "]]>]]>";
         self.send(&cmd)?;
-        self.id += 1;
         let reply: KillSessionRsp = quick_xml::de::from_str(&self.get_reply()?).unwrap();
-        if reply.is_ok() {
-            self.session_id = None
-        }
+        self.check_response_message_id(&reply)?;
         NetconfClient::make_return(reply)
     }
 
     pub fn close_session(&mut self) -> Result<CloseSessionRsp, NetconfClientError> {
+        self.id += 1;
         let req = CloseSessionReq {
             message_id: self.id,
             xmlns: consts::XMLNS.to_string(),
@@ -100,8 +99,8 @@ impl NetconfClient {
         };
         let cmd = to_string(&req).unwrap() + "]]>]]>";
         self.send(&cmd)?;
-        self.id += 1;
         let reply: CloseSessionRsp = quick_xml::de::from_str(&self.get_reply()?).unwrap();
+        self.check_response_message_id(&reply)?;
         if reply.is_ok() {
             self.session_id = None;
             self.ssh_client.disconnect()?;
@@ -114,6 +113,7 @@ impl NetconfClient {
         source: DatastoreType,
         filter: Option<Filter>,
     ) -> Result<GetConfigRsp, NetconfClientError> {
+        self.id += 1;
         let mut filter_copy = filter.clone();
         let filter_exists = filter.is_some();
         if filter_exists {
@@ -132,14 +132,15 @@ impl NetconfClient {
             cmd.insert_str(cmd.rfind(" </filter>").unwrap(), &filter.unwrap().data);
         }
         self.send(&cmd)?;
-        self.id += 1;
         let raw_rsp = self.get_reply()?;
         let mut deserialized_rsp = quick_xml::de::from_str::<GetConfigRsp>(&raw_rsp).unwrap();
         deserialized_rsp.data = Some(NetconfClient::get_data(&raw_rsp).unwrap_or("").to_string());
+        self.check_response_message_id(&deserialized_rsp)?;
         NetconfClient::make_return(deserialized_rsp)
     }
 
     pub fn get(&mut self, filter: Option<Filter>) -> Result<GetRsp, NetconfClientError> {
+        self.id += 1;
         let filter_exists = filter.is_some();
         let mut filter_copy = filter.clone();
         if filter_exists {
@@ -159,10 +160,10 @@ impl NetconfClient {
             cmd.insert_str(cmd.rfind(" </filter>").unwrap(), &filter.unwrap().data);
         }
         self.send(&cmd)?;
-        self.id += 1;
         let raw_rsp = self.get_reply()?;
         let mut deserialized_rsp = quick_xml::de::from_str::<GetRsp>(&raw_rsp).unwrap();
         deserialized_rsp.data = Some(NetconfClient::get_data(&raw_rsp).unwrap().to_string());
+        self.check_response_message_id(&deserialized_rsp)?;
         NetconfClient::make_return(deserialized_rsp)
     }
 
@@ -174,6 +175,7 @@ impl NetconfClient {
         test_option: Option<TestOptionType>,
         error_option: Option<ErrorOptionType>,
     ) -> Result<EditConfigRsp, NetconfClientError> {
+        self.id += 1;
         let mut req = EditConfigReq {
             message_id: self.id,
             xmlns: consts::XMLNS.to_string(),
@@ -205,12 +207,13 @@ impl NetconfClient {
         // hack
         cmd.insert_str(cmd.rfind(" </config>").unwrap(), &data);
         self.send(&cmd)?;
-        self.id += 1;
         let reply: EditConfigRsp = quick_xml::de::from_str(&self.get_reply()?).unwrap();
+        self.check_response_message_id(&reply)?;
         NetconfClient::make_return(reply)
     }
 
     pub fn lock(&mut self, target: DatastoreType) -> Result<LockRsp, NetconfClientError> {
+        self.id += 1;
         let model = LockReq {
             xmlns: consts::XMLNS.to_string(),
             message_id: self.id,
@@ -220,12 +223,13 @@ impl NetconfClient {
         };
         let lock_cmd = to_string(&model).unwrap() + "]]>]]>";
         self.send(&lock_cmd)?;
-        self.id += 1;
         let reply: LockRsp = quick_xml::de::from_str(&self.get_reply()?).unwrap();
+        self.check_response_message_id(&reply)?;
         NetconfClient::make_return(reply)
     }
 
     pub fn unlock(&mut self, target: DatastoreType) -> Result<UnlockRsp, NetconfClientError> {
+        self.id += 1;
         let model = UnlockReq {
             xmlns: consts::XMLNS.to_string(),
             message_id: self.id,
@@ -235,8 +239,8 @@ impl NetconfClient {
         };
         let cmd = to_string(&model).unwrap() + "]]>]]>";
         self.send(&cmd)?;
-        self.id += 1;
         let reply: UnlockRsp = quick_xml::de::from_str(&self.get_reply()?).unwrap();
+        self.check_response_message_id(&reply)?;
         NetconfClient::make_return(reply)
     }
 
@@ -244,6 +248,7 @@ impl NetconfClient {
         &mut self,
         target: DatastoreType,
     ) -> Result<DeleteConfigRsp, NetconfClientError> {
+        self.id += 1;
         let model = DeleteConfigReq {
             xmlns: consts::XMLNS.to_string(),
             message_id: self.id,
@@ -253,12 +258,13 @@ impl NetconfClient {
         };
         let cmd = to_string(&model).unwrap() + "]]>]]>";
         self.send(&cmd)?;
-        self.id += 1;
         let reply: DeleteConfigRsp = quick_xml::de::from_str(&self.get_reply()?).unwrap();
+        self.check_response_message_id(&reply)?;
         NetconfClient::make_return(reply)
     }
 
     pub fn discard_changes(&mut self) -> Result<DiscardChangesRsp, NetconfClientError> {
+        self.id += 1;
         let model = DiscardChangesReq {
             xmlns: consts::XMLNS.to_string(),
             message_id: self.id,
@@ -266,12 +272,13 @@ impl NetconfClient {
         };
         let cmd = to_string(&model).unwrap() + "]]>]]>";
         self.send(&cmd)?;
-        self.id += 1;
         let reply: DiscardChangesRsp = quick_xml::de::from_str(&self.get_reply()?).unwrap();
+        self.check_response_message_id(&reply)?;
         NetconfClient::make_return(reply)
     }
 
     pub fn commit(&mut self) -> Result<CommitRsp, NetconfClientError> {
+        self.id += 1;
         let model = CommitReq {
             xmlns: consts::XMLNS.to_string(),
             message_id: self.id,
@@ -279,8 +286,8 @@ impl NetconfClient {
         };
         let cmd = to_string(&model).unwrap() + "]]>]]>";
         self.send(&cmd)?;
-        self.id += 1;
         let reply: CommitRsp = quick_xml::de::from_str(&self.get_reply()?).unwrap();
+        self.check_response_message_id(&reply)?;
         NetconfClient::make_return(reply)
     }
 
@@ -290,6 +297,7 @@ impl NetconfClient {
         source: CopyConfigSourceType,
     ) -> Result<CopyConfigRsp, NetconfClientError> {
         // TODO
+        self.id += 1;
         let model = CopyConfigReq {
             xmlns: consts::XMLNS.to_string(),
             message_id: self.id,
@@ -300,8 +308,8 @@ impl NetconfClient {
         };
         let cmd = to_string(&model).unwrap() + "]]>]]>";
         self.send(&cmd)?;
-        self.id += 1;
         let reply: CopyConfigRsp = quick_xml::de::from_str(&self.get_reply()?).unwrap();
+        self.check_response_message_id(&reply)?;
         NetconfClient::make_return(reply)
     }
 
@@ -320,13 +328,23 @@ impl NetconfClient {
         Some(&text[value_end + 1..end_element])
     }
 
+    fn check_response_message_id<T: RpcRsp>(&self, rsp: &T) -> Result<(), NetconfClientError> {
+        let message_id = rsp.get_message_id().expect("no message id");
+        if self.id != message_id {
+            return Err(NetconfResponseIdError {
+                err: format!("request id: {} response id: {}", self.id, message_id),
+            });
+        }
+        Ok(())
+    }
+
     fn make_return<T: RpcRsp>(rsp: T) -> Result<T, NetconfClientError> {
         if rsp.is_ok() {
             Ok(rsp)
         } else {
-            return Err(NetconfError {
+            Err(NetconfError {
                 err: rsp.get_error().unwrap().to_vec(),
-            });
+            })
         }
     }
 }

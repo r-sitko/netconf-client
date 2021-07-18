@@ -14,4 +14,6 @@ pub enum NetconfClientError {
     },
     #[error("SSHClient error {err:?}")]
     SSHClientError { err: String },
+    #[error("Wrong response id {err:?}")]
+    NetconfResponseIdError { err: String },
 }
