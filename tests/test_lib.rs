@@ -17,8 +17,7 @@ fn connect() {
             &CONFIG.netconf.user,
             &CONFIG.netconf.password,
         );
-        let rsp = client.connect().unwrap();
-        assert!(rsp.is_ok(), "{:#?}", rsp);
+        client.connect().unwrap();
         client.send_hello().unwrap();
     });
 }
@@ -28,8 +27,7 @@ fn connect() {
 fn close_session() {
     run_test(|| {
         let mut client = setup_client();
-        let rsp = client.close_session().unwrap();
-        assert!(rsp.is_ok(), "{:#?}", rsp);
+        client.close_session().unwrap();
     });
 }
 
@@ -40,10 +38,9 @@ fn kill_session() {
         let mut client = setup_client();
         let client2 = setup_client();
 
-        let rsp = client
+        client
             .kill_session(client2.get_session_id().unwrap())
             .unwrap();
-        assert!(rsp.is_ok(), "{:#?}", rsp);
     });
 }
 
@@ -54,8 +51,7 @@ fn lock_unlock() {
         let mut client = setup_client();
         let mut client2 = setup_client();
 
-        let rsp = client.lock(DatastoreType::Running).unwrap();
-        assert!(rsp.is_ok());
+        client.lock(DatastoreType::Running).unwrap();
 
         let rsp = client2.lock(DatastoreType::Running).unwrap_err();
         match rsp {
@@ -79,8 +75,7 @@ fn lock_unlock() {
             _ => panic!("Wrong error type {:#?}", rsp),
         }
 
-        let rsp = client.unlock(DatastoreType::Running).unwrap();
-        assert!(rsp.is_ok());
+        client.unlock(DatastoreType::Running).unwrap();
     });
 }
 
@@ -90,7 +85,7 @@ fn get() {
     run_test(|| {
         let mut client = setup_client();
 
-        let rsp = client
+        client
             .edit_config(
                 DatastoreType::Running,
                 r#"<users xmlns="ns:yang:test"><name>Harry</name></users>"#.to_string(),
@@ -99,7 +94,6 @@ fn get() {
                 None,
             )
             .unwrap();
-        assert!(rsp.is_ok());
 
         let rsp = client
             .get(Some(Filter {
@@ -107,7 +101,6 @@ fn get() {
                 data: r#"<users xmlns="ns:yang:test"></users>"#.to_string(),
             }))
             .unwrap();
-        assert!(rsp.is_ok());
         assert_eq!(
             rsp.data,
             Some("<users xmlns=\"ns:yang:test\"><name>Harry</name></users>".to_string())
@@ -121,7 +114,7 @@ fn edit_config_running_database() {
     run_test(|| {
         let mut client = setup_client();
 
-        let rsp = client
+        client
             .edit_config(
                 DatastoreType::Running,
                 r#"<users xmlns="ns:yang:test"><name>Bob</name></users>"#.to_string(),
@@ -130,7 +123,6 @@ fn edit_config_running_database() {
                 Some(ErrorOptionType::RollbackOnError),
             )
             .unwrap();
-        assert!(rsp.is_ok());
 
         let rsp = client
             .get_config(
@@ -141,7 +133,6 @@ fn edit_config_running_database() {
                 }),
             )
             .unwrap();
-        assert!(rsp.is_ok());
         assert_eq!(
             rsp.data,
             Some("<users xmlns=\"ns:yang:test\"><name>Bob</name></users>".to_string())
@@ -155,7 +146,7 @@ fn edit_config_copy_config() {
     run_test(|| {
         let mut client = setup_client();
 
-        let rsp = client
+        client
             .edit_config(
                 DatastoreType::Running,
                 r#"<users xmlns="ns:yang:test"><name>Emily</name></users>"#.to_string(),
@@ -164,9 +155,8 @@ fn edit_config_copy_config() {
                 None,
             )
             .unwrap();
-        assert!(rsp.is_ok(), "{:#?}", rsp);
 
-        let rsp = client
+        client
             .copy_config(
                 DatastoreType::Startup,
                 CopyConfigSourceType::Datastore {
@@ -174,7 +164,6 @@ fn edit_config_copy_config() {
                 },
             )
             .unwrap();
-        assert!(rsp.is_ok(), "{:#?}", rsp);
 
         let rsp = client
             .get_config(
@@ -185,14 +174,12 @@ fn edit_config_copy_config() {
                 }),
             )
             .unwrap();
-        assert!(rsp.is_ok(), "{:#?}", rsp);
         assert_eq!(
             rsp.data,
             Some("<users xmlns=\"ns:yang:test\"><name>Emily</name></users>".to_string())
         );
 
-        let rsp = client.delete_config(DatastoreType::Startup).unwrap();
-        assert!(rsp.is_ok(), "{:#?}", rsp);
+        client.delete_config(DatastoreType::Startup).unwrap();
 
         let rsp = client
             .get_config(
@@ -203,7 +190,6 @@ fn edit_config_copy_config() {
                 }),
             )
             .unwrap();
-        assert!(rsp.is_ok(), "{:#?}", rsp);
         assert_eq!(rsp.data, Some("".to_string()));
     });
 }
@@ -223,14 +209,12 @@ fn delete_startup_data() {
                 }),
             )
             .unwrap();
-        assert!(rsp.is_ok(), "{:#?}", rsp);
         assert_eq!(
             rsp.data,
             Some(r#"<users xmlns="ns:yang:test"><name>Harry</name></users>"#.to_string())
         );
 
-        let rsp = client.delete_config(DatastoreType::Startup).unwrap();
-        assert!(rsp.is_ok(), "{:#?}", rsp);
+        client.delete_config(DatastoreType::Startup).unwrap();
 
         let rsp = client
             .get_config(
@@ -241,7 +225,6 @@ fn delete_startup_data() {
                 }),
             )
             .unwrap();
-        assert!(rsp.is_ok(), "{:#?}", rsp);
         assert_eq!(rsp.data, Some("".to_string()));
     });
 }
@@ -252,7 +235,7 @@ fn edit_config_candidate_then_commit() {
     run_test(|| {
         let mut client = setup_client();
 
-        let rsp = client
+        client
             .edit_config(
                 DatastoreType::Candidate,
                 r#"<users xmlns="ns:yang:test"><name>Alice</name></users>"#.to_string(),
@@ -261,10 +244,8 @@ fn edit_config_candidate_then_commit() {
                 None,
             )
             .unwrap();
-        assert!(rsp.is_ok());
 
-        let rsp = client.commit().unwrap();
-        assert!(rsp.is_ok());
+        client.commit().unwrap();
 
         let rsp = client
             .get_config(
@@ -275,7 +256,6 @@ fn edit_config_candidate_then_commit() {
                 }),
             )
             .unwrap();
-        assert!(rsp.is_ok());
         assert_eq!(
             rsp.data,
             Some("<users xmlns=\"ns:yang:test\"><name>Alice</name></users>".to_string())
@@ -289,7 +269,7 @@ fn discard_changes() {
     run_test(|| {
         let mut client = setup_client();
 
-        let rsp = client
+        client
             .edit_config(
                 DatastoreType::Candidate,
                 r#"<users xmlns="ns:yang:test"><name>Lily</name></users>"#.to_string(),
@@ -298,10 +278,8 @@ fn discard_changes() {
                 None,
             )
             .unwrap();
-        assert!(rsp.is_ok());
 
-        let rsp = client.discard_changes().unwrap();
-        assert!(rsp.is_ok());
+        client.discard_changes().unwrap();
 
         let rsp = client
             .get_config(
@@ -312,7 +290,6 @@ fn discard_changes() {
                 }),
             )
             .unwrap();
-        assert!(rsp.is_ok());
         assert_eq!(rsp.data, Some("".to_string()));
     });
 }
