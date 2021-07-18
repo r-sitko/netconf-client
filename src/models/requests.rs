@@ -1,7 +1,6 @@
 use heck::KebabCase;
 use serde::{Serialize, Serializer};
 use std::string::ToString;
-use strum_macros;
 
 #[derive(Debug, Serialize, PartialEq)]
 #[serde(rename = "hello")]

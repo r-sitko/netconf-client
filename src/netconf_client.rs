@@ -57,7 +57,7 @@ impl NetconfClient {
     }
 
     fn send(&mut self, data: &str) -> Result<(), NetconfClientError> {
-        self.ssh_client.write(data.as_bytes())?;
+        self.ssh_client.write_all(data.as_bytes())?;
         Ok(())
     }
 
@@ -322,7 +322,7 @@ impl NetconfClient {
 
     fn make_return<T: RpcRsp>(rsp: T) -> Result<T, NetconfClientError> {
         if rsp.is_ok() {
-            return Ok(rsp);
+            Ok(rsp)
         } else {
             return Err(NetconfError {
                 err: rsp.get_error().unwrap().to_vec(),
@@ -333,7 +333,7 @@ impl NetconfClient {
 
 impl Drop for NetconfClient {
     fn drop(&mut self) {
-        if let Some(_) = self.session_id {
+        if self.session_id.is_some() {
             if let Result::Err(err) = self.close_session() {
                 println!("close_session error: {}", err.to_string());
             }
