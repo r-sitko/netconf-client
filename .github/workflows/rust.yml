@@ -17,6 +17,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - uses: actions/cache@v2
+      id: cache
       with:
         path: |
           ~/.cargo/bin/
@@ -26,22 +27,30 @@ jobs:
           target/
         key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
     - name: Install rustfm
+      if: steps.cache.outputs.cache-hit != 'true'
       run: rustup component add rustfmt
     - name: Install clippy
+      if: steps.cache.outputs.cache-hit != 'true'
       run: rustup component add clippy
     - name: Pull NETCONF server Docker image
       run: docker pull sysrepo/sysrepo-netopeer2@sha256:266d2cdfe2c34075c8921b98303322f51e3a7348d8776783f99531d5a3aa0563
     - name: Build
+      if: steps.cache.outputs.cache-hit != 'true'
       run: cargo build --verbose
     - name: Run tests
+      if: steps.cache.outputs.cache-hit != 'true'
       run: cargo test --verbose
     - name: Check format
+      if: steps.cache.outputs.cache-hit != 'true'
       run: cargo fmt --all -- --check
     - name: Lint
+      if: steps.cache.outputs.cache-hit != 'true'
       run: cargo clippy --all-features -- -D warnings
     - name: Build documentation
+      if: steps.cache.outputs.cache-hit != 'true'
       run: cargo doc --all --no-deps
     - name: Publish documentation
+      if: steps.cache.outputs.cache-hit != 'true'
       uses: peaceiris/actions-gh-pages@v3
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
