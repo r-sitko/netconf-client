@@ -33,6 +33,7 @@ jobs:
       if: steps.cache.outputs.cache-hit != 'true'
       run: rustup component add clippy
     - name: Pull NETCONF server Docker image
+      if: steps.cache.outputs.cache-hit != 'true'
       run: docker pull sysrepo/sysrepo-netopeer2@sha256:266d2cdfe2c34075c8921b98303322f51e3a7348d8776783f99531d5a3aa0563
     - name: Build
       if: steps.cache.outputs.cache-hit != 'true'
