@@ -1,3 +1,4 @@
+use heck::KebabCase;
 use serde::{Serialize, Serializer};
 use std::string::ToString;
 use strum_macros;
@@ -51,12 +52,53 @@ pub struct EditConfigReq {
 
 #[derive(Debug, Serialize, PartialEq)]
 pub struct EditConfig {
-    // TODO: operation
     pub target: Target,
-    // TODO: default-operation
-    // TODO: test-option
-    // TODO: error-option
+    #[serde(rename = "default-operation")]
+    pub default_operation: Option<DefaultOperation>,
+    #[serde(rename = "test-option")]
+    pub test_option: Option<TestOption>,
+    #[serde(rename = "error-option")]
+    pub error_option: Option<ErrorOption>,
     pub config: Data,
+}
+
+#[derive(Debug, Serialize, PartialEq)]
+pub struct DefaultOperation {
+    #[serde(rename = "$value", serialize_with = "serialize_as_string_kebab_case")]
+    pub value: DefaultOperationType,
+}
+
+#[derive(strum_macros::ToString, Debug, Serialize, PartialEq)]
+pub enum DefaultOperationType {
+    Merge,
+    Replace,
+    None,
+}
+
+#[derive(Debug, Serialize, PartialEq)]
+pub struct TestOption {
+    #[serde(rename = "$value", serialize_with = "serialize_as_string_kebab_case")]
+    pub value: TestOptionType,
+}
+
+#[derive(strum_macros::ToString, Debug, Serialize, PartialEq)]
+pub enum TestOptionType {
+    TestThenSet,
+    Set,
+    TestOnly,
+}
+
+#[derive(Debug, Serialize, PartialEq)]
+pub struct ErrorOption {
+    #[serde(rename = "$value", serialize_with = "serialize_as_string_kebab_case")]
+    pub value: ErrorOptionType,
+}
+
+#[derive(strum_macros::ToString, Debug, Serialize, PartialEq)]
+pub enum ErrorOptionType {
+    StopOnError,
+    ContinueOnError,
+    RollbackOnError,
 }
 
 #[derive(Debug, Serialize, PartialEq)]
@@ -121,16 +163,9 @@ pub struct CommitReq {
 #[derive(Debug, Serialize, PartialEq, Default)]
 pub struct Commit {}
 
-fn filter_type_ser<S>(x: &FilterType, s: S) -> Result<S::Ok, S::Error>
-where
-    S: Serializer,
-{
-    s.serialize_str(&x.to_string().to_lowercase())
-}
-
 #[derive(Debug, Serialize, PartialEq, Clone)]
 pub struct Filter {
-    #[serde(rename = "type", serialize_with = "filter_type_ser")]
+    #[serde(rename = "type", serialize_with = "serialize_as_string_kebab_case")]
     pub filter_type: FilterType,
     #[serde(rename = "$value")]
     pub data: String,
@@ -240,6 +275,14 @@ pub enum FilterType {
     Subtree,
 }
 
+fn serialize_as_string_kebab_case<S, T>(x: &T, s: S) -> Result<S::Ok, S::Error>
+where
+    S: Serializer,
+    T: ToString,
+{
+    s.serialize_str(&x.to_string().to_kebab_case())
+}
+
 #[cfg(test)]
 mod tests {
     use quick_xml::se::to_string;
@@ -282,6 +325,15 @@ mod tests {
                 target: Target {
                     target: DatastoreType::Running,
                 },
+                default_operation: Some(DefaultOperation {
+                    value: DefaultOperationType::Merge,
+                }),
+                test_option: Some(TestOption {
+                    value: TestOptionType::TestThenSet,
+                }),
+                error_option: Some(ErrorOption {
+                    value: ErrorOptionType::StopOnError,
+                }),
                 config: Data {
                     xmlns_xc: Some("urn:ietf:params:xml:ns:netconf:base:1.0".to_string()),
                     data: " ".to_string(),
@@ -295,6 +347,9 @@ mod tests {
 <target>
 <running/>
 </target>
+<default-operation>merge</default-operation>
+<test-option>test-then-set</test-option>
+<error-option>stop-on-error</error-option>
 <config xmlns:xc="urn:ietf:params:xml:ns:netconf:base:1.0"> </config>
 </edit-config>
 </rpc>

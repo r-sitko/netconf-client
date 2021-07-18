@@ -170,18 +170,37 @@ impl NetconfClient {
         &mut self,
         source: DatastoreType,
         data: String,
+        default_operation: Option<DefaultOperationType>,
+        test_option: Option<TestOptionType>,
+        error_option: Option<ErrorOptionType>,
     ) -> Result<EditConfigRsp, NetconfClientError> {
-        let req = EditConfigReq {
+        let mut req = EditConfigReq {
             message_id: self.id,
             xmlns: consts::XMLNS.to_string(),
             edit_config: EditConfig {
                 target: Target { target: source },
+                default_operation: None,
+                test_option: None,
+                error_option: None,
                 config: Data {
                     xmlns_xc: Some("urn:ietf:params:xml:ns:netconf:base:1.0".to_string()),
                     data: " ".to_string(),
                 },
             },
         };
+        if let Some(default_operation) = default_operation {
+            req.edit_config.default_operation = Some(DefaultOperation {
+                value: default_operation,
+            })
+        }
+        if let Some(test_option) = test_option {
+            req.edit_config.test_option = Some(TestOption { value: test_option })
+        }
+        if let Some(error_option) = error_option {
+            req.edit_config.error_option = Some(ErrorOption {
+                value: error_option,
+            })
+        }
         let mut cmd = to_string(&req).unwrap() + "]]>]]>";
         // hack
         cmd.insert_str(cmd.rfind(" </config>").unwrap(), &data);

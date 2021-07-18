@@ -94,6 +94,9 @@ fn get() {
             .edit_config(
                 DatastoreType::Running,
                 r#"<users xmlns="ns:yang:test"><name>Harry</name></users>"#.to_string(),
+                None,
+                None,
+                None,
             )
             .unwrap();
         assert!(rsp.is_ok());
@@ -122,6 +125,9 @@ fn edit_config_running_database() {
             .edit_config(
                 DatastoreType::Running,
                 r#"<users xmlns="ns:yang:test"><name>Bob</name></users>"#.to_string(),
+                Some(DefaultOperationType::Merge),
+                Some(TestOptionType::TestThenSet),
+                Some(ErrorOptionType::RollbackOnError),
             )
             .unwrap();
         assert!(rsp.is_ok());
@@ -153,6 +159,9 @@ fn edit_config_copy_config() {
             .edit_config(
                 DatastoreType::Running,
                 r#"<users xmlns="ns:yang:test"><name>Emily</name></users>"#.to_string(),
+                None,
+                None,
+                None,
             )
             .unwrap();
         assert!(rsp.is_ok(), "{:#?}", rsp);
@@ -247,6 +256,9 @@ fn edit_config_candidate_then_commit() {
             .edit_config(
                 DatastoreType::Candidate,
                 r#"<users xmlns="ns:yang:test"><name>Alice</name></users>"#.to_string(),
+                None,
+                None,
+                None,
             )
             .unwrap();
         assert!(rsp.is_ok());
@@ -281,6 +293,9 @@ fn discard_changes() {
             .edit_config(
                 DatastoreType::Candidate,
                 r#"<users xmlns="ns:yang:test"><name>Lily</name></users>"#.to_string(),
+                None,
+                None,
+                None,
             )
             .unwrap();
         assert!(rsp.is_ok());
