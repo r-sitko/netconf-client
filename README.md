@@ -89,7 +89,7 @@ When error is encountered (for example: io error, SSH error, NETCONF response er
 
 ## Running integration tests
 ```shell
-cargo test
+cargo test --test '*'
 ```
 
 

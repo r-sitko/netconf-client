@@ -24,7 +24,7 @@ impl RpcRsp for EditConfigRsp {
     }
 
     fn get_error(&self) -> Option<&Vec<RpcError>> {
-        return Some(&self.rpc_error.as_ref().unwrap());
+        return Some(self.rpc_error.as_ref().unwrap());
     }
 
     fn get_message_id(&self) -> Option<u32> {
@@ -50,7 +50,7 @@ impl RpcRsp for CopyConfigRsp {
     }
 
     fn get_error(&self) -> Option<&Vec<RpcError>> {
-        return Some(&self.rpc_error.as_ref().unwrap());
+        return Some(self.rpc_error.as_ref().unwrap());
     }
 
     fn get_message_id(&self) -> Option<u32> {
@@ -76,7 +76,7 @@ impl RpcRsp for DeleteConfigRsp {
     }
 
     fn get_error(&self) -> Option<&Vec<RpcError>> {
-        return Some(&self.rpc_error.as_ref().unwrap());
+        return Some(self.rpc_error.as_ref().unwrap());
     }
 
     fn get_message_id(&self) -> Option<u32> {
@@ -102,7 +102,7 @@ impl RpcRsp for LockRsp {
     }
 
     fn get_error(&self) -> Option<&Vec<RpcError>> {
-        return Some(&self.rpc_error.as_ref().unwrap());
+        return Some(self.rpc_error.as_ref().unwrap());
     }
 
     fn get_message_id(&self) -> Option<u32> {
@@ -128,7 +128,7 @@ impl RpcRsp for UnlockRsp {
     }
 
     fn get_error(&self) -> Option<&Vec<RpcError>> {
-        return Some(&self.rpc_error.as_ref().unwrap());
+        return Some(self.rpc_error.as_ref().unwrap());
     }
 
     fn get_message_id(&self) -> Option<u32> {
@@ -154,7 +154,7 @@ impl RpcRsp for CloseSessionRsp {
     }
 
     fn get_error(&self) -> Option<&Vec<RpcError>> {
-        return Some(&self.rpc_error.as_ref().unwrap());
+        return Some(self.rpc_error.as_ref().unwrap());
     }
 
     fn get_message_id(&self) -> Option<u32> {
@@ -180,7 +180,7 @@ impl RpcRsp for KillSessionRsp {
     }
 
     fn get_error(&self) -> Option<&Vec<RpcError>> {
-        return Some(&self.rpc_error.as_ref().unwrap());
+        return Some(self.rpc_error.as_ref().unwrap());
     }
 
     fn get_message_id(&self) -> Option<u32> {
@@ -205,7 +205,7 @@ impl RpcRsp for HelloServer {
     }
 
     fn get_error(&self) -> Option<&Vec<RpcError>> {
-        return Some(&self.rpc_error.as_ref().unwrap());
+        return Some(self.rpc_error.as_ref().unwrap());
     }
 
     fn get_message_id(&self) -> Option<u32> {
@@ -231,7 +231,7 @@ impl RpcRsp for GetConfigRsp {
     }
 
     fn get_error(&self) -> Option<&Vec<RpcError>> {
-        return Some(&self.rpc_error.as_ref().unwrap());
+        return Some(self.rpc_error.as_ref().unwrap());
     }
 
     fn get_message_id(&self) -> Option<u32> {
@@ -257,7 +257,7 @@ impl RpcRsp for GetRsp {
     }
 
     fn get_error(&self) -> Option<&Vec<RpcError>> {
-        return Some(&self.rpc_error.as_ref().unwrap());
+        return Some(self.rpc_error.as_ref().unwrap());
     }
 
     fn get_message_id(&self) -> Option<u32> {
@@ -283,7 +283,7 @@ impl RpcRsp for DiscardChangesRsp {
     }
 
     fn get_error(&self) -> Option<&Vec<RpcError>> {
-        return Some(&self.rpc_error.as_ref().unwrap());
+        return Some(self.rpc_error.as_ref().unwrap());
     }
 
     fn get_message_id(&self) -> Option<u32> {
@@ -309,7 +309,7 @@ impl RpcRsp for CommitRsp {
     }
 
     fn get_error(&self) -> Option<&Vec<RpcError>> {
-        return Some(&self.rpc_error.as_ref().unwrap());
+        return Some(self.rpc_error.as_ref().unwrap());
     }
 
     fn get_message_id(&self) -> Option<u32> {
