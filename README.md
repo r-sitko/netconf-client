@@ -63,7 +63,7 @@ netconf-client = { git = "https://github.com/rsitko92/netconf-client.git" }
 Basing on concrete commit:
 ```toml
 [dependencies]
-netconf-client = { git = "https://github.com/rsitko92/netconf-client.git", rev = "9486fdf" }
+netconf-client = { git = "https://github.com/rsitko92/netconf-client.git", rev = "3f63491" }
 ```
 
 ### Examples
