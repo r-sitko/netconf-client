@@ -28,7 +28,8 @@ Rust NETCONF RFC6241 client with SSH secure connection support.
   - \<edit-config>
   - \<copy-config>
   - \<delete-config>
-  - \<lock>, \<unlock>
+  - \<lock>
+  - \<unlock>
   - \<get>
   - \<close-session>
   - \<kill-session>
