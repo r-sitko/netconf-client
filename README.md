@@ -67,7 +67,7 @@ netconf-client = { git = "https://github.com/rsitko92/netconf-client.git", rev =
 
 ### Examples
 
-All netconf-client API methods returns std::Result type. If client get successfull response, std::Result with Ok(T) variant is returned, where T is a apriopriate NETCONF response type defined in [replies](src/models/replies.rs) module.
+All netconf-client API methods returns std::Result type. If client get successful response, std::Result with Ok(T) variant is returned, where T is a apriopriate NETCONF response type defined in [replies](src/models/replies.rs) module.
 
 ```rust
 let mut client = NetconfClient::new(
@@ -85,7 +85,7 @@ println!("get response: {:?}", rsp.data);
 More useful examples can be found in [tests](tests) folder.
 
 ### Error handling
-When error is encountered (for example: io error, SSH error, NETCONF response error) API methods return std::Result with Err(NetconfClientError) variant. NetconfClientError is an enum defined in [errors](src/errors.rs) module. User should check is methods return Err and react accordingly.
+When error is encountered (for example: io error, SSH error, NETCONF response error) API methods return std::Result with Err(NetconfClientError) variant. NetconfClientError is an enum defined in [errors](src/errors.rs) module. User should check if methods return Err and react accordingly.
 
 ## Running integration tests
 ```shell
